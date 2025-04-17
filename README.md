@@ -10,4 +10,8 @@ To Run, do the following:
         If errors encountered - ensure that you are using java 23 to compile and run the code
 
     Windows:
+        install maven on windows
+        run commands:
+            mvn compile
+            mvn exec:java
         
