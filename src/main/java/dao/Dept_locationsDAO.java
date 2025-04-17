@@ -15,10 +15,9 @@ public class Dept_locationsDAO {
 
     public void add(int Dnumber) {
         try {
-            System.out.println("Autocommit disabled");
             conn.setAutoCommit(false);
 
-            System.out.println("\nAttempting to lock department record");
+            System.out.println("\nAttempting to lock department record...");
             // perform a lock on department record
             String query = "SELECT * FROM Department WHERE Dnumber = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -27,7 +26,7 @@ public class Dept_locationsDAO {
             System.out.println("Lock acquired");
 
             if(!rs.next()) {
-                System.out.println("Department not found");
+                System.out.println("\nDepartment not found");
                 conn.rollback();
                 return;
             }
@@ -38,11 +37,12 @@ public class Dept_locationsDAO {
             stmt2.setInt(1, Dnumber);
             ResultSet rs2 = stmt2.executeQuery();
 
-            System.out.println("Locations:");
+            System.out.println("\nLocations:");
             boolean locations = false;
             while(rs2.next()) {
                 locations = true;
-                System.out.println(rs2.getString("Dnumber") + ", " + rs2.getString("Dlocation"));
+                System.out.println("Department Number: " + rs2.getString("Dnumber"));
+                System.out.println("Location: " + rs2.getString("Dlocation\n"));
             }
 
             if(!locations) {
@@ -50,9 +50,9 @@ public class Dept_locationsDAO {
             }
 
             // create new location record
-            System.out.println("Enter information:");
+            System.out.println("\nEnter information:");
 
-            System.out.println("Dlocation: ");
+            System.out.println("Location Name: ");
             String Dlocation = System.console().readLine();
 
             // insert the information inputted from the user into the database
@@ -76,7 +76,6 @@ public class Dept_locationsDAO {
         } finally {
             try {
                 conn.setAutoCommit(true);
-                System.out.println("Autocommit enabled");
             } catch (SQLException e) {
                 System.out.println("Failed to enable autocommit: " + e.getMessage());
             }
@@ -85,10 +84,9 @@ public class Dept_locationsDAO {
 
     public void delete(int Dnumber) {
         try {
-            System.out.println("Autocommit disabled");
             conn.setAutoCommit(false);
 
-            System.out.println("\nAttempting to lock department record");
+            System.out.println("\nAttempting to lock department record...");
             // perform a lock on department record
             String query = "SELECT * FROM Department WHERE Dnumber = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -97,7 +95,7 @@ public class Dept_locationsDAO {
             System.out.println("Lock acquired");
 
             if(!rs.next()) {
-                System.out.println("Department not found");
+                System.out.println("\nDepartment not found");
                 conn.rollback();
                 return;
             }
@@ -108,22 +106,22 @@ public class Dept_locationsDAO {
             stmt2.setInt(1, Dnumber);
             ResultSet rs2 = stmt2.executeQuery();
 
-            System.out.println("Locations:");
-            boolean locations = false;
+            System.out.println("\nLocations:");
             ArrayList<String> location_names = new ArrayList<>();
-            while(rs2.next()) {
-                locations = true;
-                location_names.add(rs2.getString("Dlocation"));
-                System.out.println(rs2.getString("Dnumber") + ", " + rs2.getString("Dlocation"));
-            }
 
-            if(!locations) {
+            if(!rs2.next()) {
                 System.out.println("Department has no locations");
                 conn.rollback();
                 return;
             }
 
-            System.out.println("Enter name of location to be removed: ");
+            do {
+                location_names.add(rs2.getString("Dlocation"));
+                System.out.println("\t- " + rs2.getString("Dlocation"));
+
+            } while(rs2.next());
+
+            System.out.println("\nEnter name of location to be removed: ");
             String location = System.console().readLine();
 
             if(!location_names.contains(location)) {
@@ -155,7 +153,6 @@ public class Dept_locationsDAO {
         } finally {
             try {
                 conn.setAutoCommit(true);
-                System.out.println("Autocommit enabled");
             } catch (SQLException e) {
                 System.out.println("Failed to enable autocommit: " + e.getMessage());
             }

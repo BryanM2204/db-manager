@@ -65,8 +65,12 @@ public class Main {
                         employee.setSalary(Float.parseFloat(System.console().readLine()));
 
                         System.out.println("Super_ssn: ");
-                        employee.setSuper_ssn(System.console().readLine());
-
+                        String input = System.console().readLine();
+                        if(input.isBlank()) {
+                            employee.setSuper_ssn(null);
+                        } else {
+                            employee.setSuper_ssn(input);
+                        }
                         System.out.println("Dno: ");
                         employee.setDno(Integer.parseInt(System.console().readLine()));
 

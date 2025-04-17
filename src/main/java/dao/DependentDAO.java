@@ -15,11 +15,10 @@ public class DependentDAO {
 
     public void add(String ssn) {
         try {
-            System.out.println("Autocommit disabled");
             conn.setAutoCommit(false);
 
             // perform a lock on employee record
-            System.out.println("\nAttempting to lock employee record");
+            System.out.println("\nAttempting to lock employee record...");
             String query = "SELECT * FROM Employee WHERE SSN = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, ssn);
@@ -38,13 +37,16 @@ public class DependentDAO {
             stmt2.setString(1, ssn);
             ResultSet rs2 = stmt2.executeQuery();
 
-            System.out.println("Dependents: ");
+            System.out.println("\nDependents: ");
 
             boolean dependents = false;
             while(rs2.next()) {
                 dependents = true;
-                System.out.println(rs2.getString("Essn") + ", " + rs2.getString("Dependent_name") + ", "
-                + rs2.getString("Sex") + ", " + rs2.getString("Bdate") + ", " + rs2.getString("Relationship"));
+                System.out.println("\nEmployee SSN: " + rs2.getString("Essn"));
+                System.out.println("Dependent Name: " + rs2.getString("Dependent_name"));
+                System.out.println("Sex: " + rs2.getString("Sex"));
+                System.out.println("Birthdate: " + rs2.getString("Bdate"));
+                System.out.println("Relationship: " + rs2.getString("Relationship"));
             }
 
             if(!dependents) {
@@ -52,7 +54,7 @@ public class DependentDAO {
             }
 
             // ask for new dependent's information to add to the database
-            System.out.println("Enter information:");
+            System.out.println("\nEnter information:");
 
             System.out.println("Dependent_name: ");
             String Dependent_name = System.console().readLine();
@@ -91,7 +93,6 @@ public class DependentDAO {
         } finally {
             try {
                 conn.setAutoCommit(true);
-                System.out.println("Autocommit enabled");
             } catch (SQLException e) {
                 System.out.println("Failed to enable autocommit: " + e.getMessage());
             }
@@ -104,12 +105,12 @@ public class DependentDAO {
             conn.setAutoCommit(false);
 
             // perform a lock on employee record
-            System.out.println("Attempting to lock employee record");
+            System.out.println("\nAttempting to lock employee record...");
             String query = "SELECT * FROM Employee WHERE SSN = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, ssn);
             ResultSet rs = stmt.executeQuery();
-            System.out.println("Lock acquired");
+            System.out.println("Lock acquired\n");
 
             if(!rs.next()) {
                 System.out.println("Employee not found");
@@ -123,19 +124,22 @@ public class DependentDAO {
             stmt2.setString(1, ssn);
             ResultSet rs2 = stmt2.executeQuery();
 
-            System.out.println("Dependents: ");
+            System.out.println("Dependents:");
 
             boolean dependents = false;
             ArrayList<String> dependents_list = new ArrayList<>();
             while(rs2.next()) {
                 dependents = true;
                 dependents_list.add(rs2.getString("Dependent_name"));
-                System.out.println(rs2.getString("Essn") + ", " + rs2.getString("Dependent_name") + ", "
-                        + rs2.getString("Sex") + ", " + rs2.getString("Bdate") + ", " + rs2.getString("Relationship"));
+                System.out.println("Employee SSN: " + rs2.getString("Essn"));
+                System.out.println("Dependent Name: " + rs2.getString("Dependent_name"));
+                System.out.println("Sex: " + rs2.getString("Sex"));
+                System.out.println("Birthdate: " + rs2.getString("Bdate"));
+                System.out.println("Relationship: " + rs2.getString("Relationship") + "\n");
             }
 
             if(!dependents) {
-                System.out.println("None");
+                System.out.println("None\n");
                 conn.rollback();
                 return;
             }
@@ -169,7 +173,6 @@ public class DependentDAO {
         } finally {
             try {
                 conn.setAutoCommit(true);
-                System.out.println("Autocommit enabled");
             } catch (SQLException e) {
                 System.out.println("Failed to enable autocommit: " + e.getMessage());
             }

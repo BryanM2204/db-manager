@@ -3,6 +3,7 @@ package dao;
 import model.Department;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class DepartmentDAO {
     private final Connection conn;
@@ -17,18 +18,28 @@ public class DepartmentDAO {
         try(PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, Dept_number);
             ResultSet rs = stmt.executeQuery();
-            while(rs.next()) {
-                String Dname = rs.getString("Dname");
-                int Dnumber = rs.getInt("Dnumber");
-                String Mgr_ssn = rs.getString("Mgr_ssn");
-                Date Mgr_start_date = rs.getDate("Mgr_start_date");
-                String Supervisor_Fname = rs.getString("Supervisor_Fname");
-                String Supervisor_Minit = rs.getString("Supervisor_Minit");
-                String Supervisor_Lname = rs.getString("Supervisor_Lname");
-                String Dlocation = rs.getString("Dlocation");
-                System.out.println(Dname + ", " + Dnumber + ", " + Mgr_ssn + ", " + Mgr_start_date + ", " + Supervisor_Fname + ", " + Supervisor_Minit + ", " + Supervisor_Lname + ", " + Dlocation);
 
+            if(!rs.next()) {
+                System.out.println("Department not found");
             }
+
+            System.out.println("\nDepartment Name: " + rs.getString("Dname"));
+            System.out.println("Dnumber: " + rs.getInt("Dnumber"));
+            System.out.println("Manager SSN: " + rs.getString("Mgr_ssn"));
+            System.out.println("Manager Start_Date: " + rs.getDate("Mgr_start_date"));
+            System.out.println("Supervisor: " + rs.getString("Supervisor_Fname") + " " + rs.getString("Supervisor_Minit") + " " + rs.getString("Supervisor_Lname"));
+            System.out.println("Location(s): ");
+
+            ArrayList<String> locations = new ArrayList<>();
+
+            do {
+                locations.add(rs.getString("Dlocation"));
+            } while (rs.next());
+
+            for(String s : locations) {
+                System.out.println("\t- " + s);
+            }
+
         } catch (SQLException e) {
             System.out.println("Failed to get department: " + e.getMessage());
         }
@@ -51,10 +62,9 @@ public class DepartmentDAO {
 
     public void delete(int Dnumber) {
         try {
-            System.out.println("Autocommit disabled");
             conn.setAutoCommit(false);
 
-            System.out.println("\nAttempting to lock department record");
+            System.out.println("\nAttempting to lock department record...");
             String query = "SELECT * FROM Department WHERE Dnumber = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setInt(1, Dnumber);
@@ -62,9 +72,12 @@ public class DepartmentDAO {
             System.out.println("Lock acquired");
 
             if(rs.next()) {
-                System.out.println("Department information: ");
-                System.out.println(rs.getString("Dname") + ", " + rs.getString("Dnumber") + ", "
-                + rs.getString("Mgr_ssn") + ", " + rs.getString("Mgr_start_date"));
+                System.out.println("\nDepartment information: ");
+                System.out.println("Department Name: " + rs.getString("Dname"));
+                System.out.println("Department Number: " + rs.getString("Dnumber"));
+                System.out.println("Manager SSN: " + rs.getString("Mgr_ssn"));
+                System.out.println("Manager Start Date: " + rs.getString("Mgr_start_date"));
+
 
                 boolean hasDependencies = false;
                 String query2 = "SELECT * FROM Dept_locations WHERE Dnumber = ?";
@@ -92,12 +105,12 @@ public class DepartmentDAO {
                 }
 
                 if(hasDependencies) {
-                    System.out.println("Cannot delete department with dependencies\nDeletion cancelled");
+                    System.out.println("\nCannot delete department with dependencies\nDeletion cancelled");
                     conn.rollback();
                     return;
                 }
 
-                System.out.println("Comfirm deletion? Yes or no?");
+                System.out.println("\nComfirm deletion? Yes or no?");
                 String answer = System.console().readLine();
 
                 if(answer.equalsIgnoreCase("Yes")) {
@@ -131,7 +144,6 @@ public class DepartmentDAO {
         } finally {
             try {
                 conn.setAutoCommit(true);
-                System.out.println("Autocommit enabled");
             } catch (SQLException e) {
                 System.out.println("Failed to enable autocommit: " + e.getMessage());
             }

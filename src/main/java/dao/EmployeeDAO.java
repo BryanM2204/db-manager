@@ -81,10 +81,9 @@ public class EmployeeDAO {
 
     public void update(String ssn) {
         try{
-            System.out.println("Autocommit disabled");
             conn.setAutoCommit(false);
 
-            System.out.println("Attempting to lock employee record");
+            System.out.println("\nAttempting to lock employee record...");
             String query = "SELECT * FROM Employee WHERE Ssn = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, ssn);
@@ -92,12 +91,18 @@ public class EmployeeDAO {
             System.out.println("Lock acquired");
 
             if(rs.next()) {
-                System.out.println("Current Employee Information:");
-                System.out.println(rs.getString("Fname") + ", " + rs.getString("Minit") + ", " + rs.getString("Lname")
-                + ", " + rs.getString("Ssn") + ", " + rs.getDate("Bdate") + ", " + rs.getString("Address") + ", " + rs.getString("Sex")
-                + ", " + rs.getFloat("Salary") + ", " + rs.getString("Super_ssn") + ", " + rs.getInt("Dno"));
+                System.out.println("\nFirst Name: " + rs.getString("Fname"));
+                System.out.println("Middle Initial: " + rs.getString("Minit"));
+                System.out.println("Last Name: " + rs.getString("Lname"));
+                System.out.println("SSN: " + rs.getString("Ssn"));
+                System.out.println("Birthdate: " + rs.getString("Bdate"));
+                System.out.println("Address: " + rs.getString("Address"));
+                System.out.println("Sex: " + rs.getString("Sex"));
+                System.out.println("Salary: " + rs.getString("Salary"));
+                System.out.println("Super_ssn: " + rs.getString("Super_ssn"));
+                System.out.println("Dno: " + rs.getString("Dno"));
 
-                System.out.println("Enter new information (leave blank to keep current):");
+                System.out.println("\nEnter new information (leave blank to keep current):");
                 System.out.print("Address: ");
                 String Address = System.console().readLine();
 
@@ -107,9 +112,9 @@ public class EmployeeDAO {
                 System.out.print("Salary: ");
                 String Salary = System.console().readLine();
 
-                System.out.print("Supervisor SSN: ");
+                System.out.print("Supervisor SSN (type NULL if desired): ");
                 String Super_ssn = System.console().readLine();
-                if(Super_ssn.isBlank()) {
+                if(Super_ssn.equalsIgnoreCase("null")) {
                     Super_ssn = null;
                 }
 
@@ -134,10 +139,13 @@ public class EmployeeDAO {
                     fields.add(Salary);
                 }
 
-                if(!Super_ssn.isBlank()) {
-                    update_query.append("Super_ssn = ?, ");
-                    fields.add(Super_ssn);
+                if(Super_ssn != null) {
+                    if(!Super_ssn.isBlank()) {
+                        update_query.append("Super_ssn = ?, ");
+                        fields.add(Super_ssn);
+                    }
                 }
+
 
                 if(!Dno.isBlank()) {
                     update_query.append("Dno = ?, ");
@@ -154,9 +162,9 @@ public class EmployeeDAO {
                 }
 
                 update_stmt.executeUpdate();
-                System.out.println("Employee updated successfully");
+                System.out.println("\nEmployee updated successfully");
             } else {
-                System.out.println("Employee not found");
+                System.out.println("\nEmployee not found");
             }
 
             conn.commit();
@@ -173,7 +181,6 @@ public class EmployeeDAO {
         } finally {
             try {
                 conn.setAutoCommit(true);
-                System.out.println("Autocommit enabled");
             } catch (SQLException e) {
                 System.out.println("Failed to enable autocommit: " + e.getMessage());
             }
@@ -182,10 +189,9 @@ public class EmployeeDAO {
 
     public void delete(String ssn) {
         try {
-            System.out.println("Autocommit disabled");
             conn.setAutoCommit(false);
 
-            System.out.println("\nAttempting to lock employee record");
+            System.out.println("\nAttempting to lock employee record...");
             String query = "SELECT * FROM Employee WHERE Ssn = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, ssn);
@@ -193,10 +199,16 @@ public class EmployeeDAO {
             System.out.println("Lock acquired");
 
             if(rs.next()) {
-                System.out.println("Employee Information:");
-                System.out.println(rs.getString("Fname") + ", " + rs.getString("Minit") + ", " + rs.getString("Lname")
-                        + ", " + rs.getString("Ssn") + ", " + rs.getDate("Bdate") + ", " + rs.getString("Address") + ", " + rs.getString("Sex")
-                        + ", " + rs.getFloat("Salary") + ", " + rs.getString("Super_ssn") + ", " + rs.getInt("Dno"));
+                System.out.println("\nFirst Name: " + rs.getString("Fname"));
+                System.out.println("Middle Initial: " + rs.getString("Minit"));
+                System.out.println("Last Name: " + rs.getString("Lname"));
+                System.out.println("SSN: " + rs.getString("Ssn"));
+                System.out.println("Birthdate: " + rs.getString("Bdate"));
+                System.out.println("Address: " + rs.getString("Address"));
+                System.out.println("Sex: " + rs.getString("Sex"));
+                System.out.println("Salary: " + rs.getString("Salary"));
+                System.out.println("Super_ssn: " + rs.getString("Super_ssn"));
+                System.out.println("Dno: " + rs.getString("Dno"));
 
                 boolean hasDependencies = false;
                 String query2 = "SELECT * FROM Employee WHERE Super_ssn = ?";
@@ -235,12 +247,12 @@ public class EmployeeDAO {
                 }
 
                 if(hasDependencies) {
-                    System.out.println("Cannot delete employee with dependencies\nDeletion cancelled");
+                    System.out.println("\nCannot delete employee with dependencies. Please remove dependencies first.\nDeletion cancelled");
                     conn.rollback();
                     return;
                 }
 
-                System.out.println("Comfirm deletion? Yes or no?");
+                System.out.println("\nComfirm deletion? Yes or no?");
                 String answer = System.console().readLine();
 
                 if(answer.equalsIgnoreCase("yes")) {
@@ -274,7 +286,6 @@ public class EmployeeDAO {
         } finally {
             try {
                 conn.setAutoCommit(true);
-                System.out.println("Autocommit enabled");
             } catch (SQLException e) {
                 System.out.println("Failed to enable autocommit: " + e.getMessage());
             }
