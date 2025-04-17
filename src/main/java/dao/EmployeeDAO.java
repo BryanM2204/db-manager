@@ -14,6 +14,8 @@ public class EmployeeDAO {
     }
 
     public void get(String ssn) {
+
+        // Retrieves detailed employee info by SSN, including supervisor and dependents
         String query = """
                 SELECT E.Fname, E.Minit, E.Lname, E.Ssn, E.Bdate, E.Address, E.Sex, E.Salary, E.Super_ssn, E.Dno, S.Fname AS
                 Supervisor_Fname, S.Minit as Supervisor_Minit, S.Lname AS Supervisor_Lname, D.Dname AS Department_Name, F.Dependent_name AS Dependent_Name
@@ -43,13 +45,17 @@ public class EmployeeDAO {
             System.out.println("Supervisor: " + rs.getString("Supervisor_Fname") + " " + rs.getString("Supervisor_Minit") + " " + rs.getString("Supervisor_Lname"));
             System.out.println("Department: " + rs.getString("Department_Name"));
             System.out.println("Dependent(s): ");
-
+            
             do {
                 dependentNames.add(rs.getString("Dependent_Name"));
             } while (rs.next());
 
             for(String s : dependentNames) {
-                System.out.println("\t- " + s);
+                if(s == null) {
+                    System.out.println("\t- none");
+                } else {
+                    System.out.println("\t- " + s);
+                }
             }
 
         } catch (SQLException e) {
@@ -58,6 +64,8 @@ public class EmployeeDAO {
     }
 
     public void add(Employee employee) {
+
+        // Adds a new employee record to the Employee table
         String query = "INSERT INTO Employee VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try(PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, employee.getFname());
@@ -84,6 +92,8 @@ public class EmployeeDAO {
             conn.setAutoCommit(false);
 
             System.out.println("\nAttempting to lock employee record...");
+
+            // Retrieve details of Employee while also performing a lock on the row
             String query = "SELECT * FROM Employee WHERE Ssn = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, ssn);
@@ -121,6 +131,8 @@ public class EmployeeDAO {
                 System.out.print("Department Number: ");
                 String Dno = System.console().readLine();
 
+                // Dynamically construct a query where an update query is performed
+                // This sets all the user defined fields to the newest values inputted by the user
                 StringBuilder update_query = new StringBuilder("UPDATE Employee SET ");
                 ArrayList<String> fields = new ArrayList<>();
 
@@ -152,6 +164,7 @@ public class EmployeeDAO {
                     fields.add(Dno);
                 }
 
+                // Added to end of query - matches the Ssn with the user inputted Ssn
                 update_query.setLength(update_query.length() - 2);
                 update_query.append(" WHERE Ssn = ?");
                 fields.add(ssn);
@@ -191,6 +204,7 @@ public class EmployeeDAO {
         try {
             conn.setAutoCommit(false);
 
+            // Retrieve details of employee while also locking the row
             System.out.println("\nAttempting to lock employee record...");
             String query = "SELECT * FROM Employee WHERE Ssn = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -211,6 +225,8 @@ public class EmployeeDAO {
                 System.out.println("Dno: " + rs.getString("Dno"));
 
                 boolean hasDependencies = false;
+
+                // obtain employees whose boss has the ssn inputted by the user
                 String query2 = "SELECT * FROM Employee WHERE Super_ssn = ?";
                 PreparedStatement stmt2 = conn.prepareStatement(query2);
                 stmt2.setString(1, ssn);
@@ -219,7 +235,7 @@ public class EmployeeDAO {
                     hasDependencies = true;
                 }
 
-
+                // obtain departments where the manager is the employee with the user inputted ssn
                 String query3 = "SELECT * FROM Department WHERE Mgr_ssn = ?";
                 PreparedStatement stmt3 = conn.prepareStatement(query3);
                 stmt3.setString(1, ssn);
@@ -228,7 +244,7 @@ public class EmployeeDAO {
                     hasDependencies = true;
                 }
 
-
+                // obtain dependents that are connected to the employee of the ssn inputted by user
                 String query4 = "SELECT * FROM Dependent WHERE Essn = ?";
                 PreparedStatement stmt4 = conn.prepareStatement(query4);
                 stmt4.setString(1, ssn);
@@ -237,7 +253,7 @@ public class EmployeeDAO {
                     hasDependencies = true;
                 }
 
-
+                // checks works_on table to see if employee is connected to any entries
                 String query5 = "SELECT * FROM Works_on WHERE Essn = ?";
                 PreparedStatement stmt5 = conn.prepareStatement(query5);
                 stmt5.setString(1, ssn);
@@ -256,6 +272,7 @@ public class EmployeeDAO {
                 String answer = System.console().readLine();
 
                 if(answer.equalsIgnoreCase("yes")) {
+                    // if no dependencies and the user inputs yes, then perform a delete on the employee with the specified ssn
                     String delete_query = "DELETE FROM Employee WHERE Ssn = ?";
                     PreparedStatement delete_stmt = conn.prepareStatement(delete_query);
                     delete_stmt.setString(1, ssn);

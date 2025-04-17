@@ -17,8 +17,9 @@ public class DependentDAO {
         try {
             conn.setAutoCommit(false);
 
-            // perform a lock on employee record
             System.out.println("\nAttempting to lock employee record...");
+
+            // Lock the employee row to prevent concurrent modifications
             String query = "SELECT * FROM Employee WHERE SSN = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, ssn);
@@ -31,7 +32,7 @@ public class DependentDAO {
                 return;
             }
 
-            // Show all dependents of the Employee
+            // Show existing dependents for the employee
             String query2 = "SELECT * FROM Dependent WHERE Essn = ?";
             PreparedStatement stmt2 = conn.prepareStatement(query2);
             stmt2.setString(1, ssn);
@@ -104,7 +105,7 @@ public class DependentDAO {
         try {
             conn.setAutoCommit(false);
 
-            // perform a lock on employee record
+            // Lock the employee row to ensure safe deletion
             System.out.println("\nAttempting to lock employee record...");
             String query = "SELECT * FROM Employee WHERE SSN = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -118,7 +119,7 @@ public class DependentDAO {
                 return;
             }
 
-            // Show all dependents of the Employee
+            // Retrieve and show all dependents of the employee
             String query2 = "SELECT * FROM Dependent WHERE Essn = ?";
             PreparedStatement stmt2 = conn.prepareStatement(query2);
             stmt2.setString(1, ssn);
@@ -152,7 +153,7 @@ public class DependentDAO {
                 conn.rollback();
                 return;
             }
-
+            // Perform deletion of dependent based on the Employee's SSN and dependent's name
             String delete_query = "DELETE FROM Dependent WHERE Essn = ? AND Dependent_name = ?";
             PreparedStatement delete_stmt = conn.prepareStatement(delete_query);
             delete_stmt.setString(1, ssn);

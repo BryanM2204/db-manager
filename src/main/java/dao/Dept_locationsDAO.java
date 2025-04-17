@@ -18,7 +18,8 @@ public class Dept_locationsDAO {
             conn.setAutoCommit(false);
 
             System.out.println("\nAttempting to lock department record...");
-            // perform a lock on department record
+
+            // Lock the department row to avoid conflicts
             String query = "SELECT * FROM Department WHERE Dnumber = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setInt(1, Dnumber);
@@ -31,7 +32,7 @@ public class Dept_locationsDAO {
                 return;
             }
 
-            // Show all locations of department
+            // Display all existing locations for the department
             String query2 = "SELECT * FROM Dept_locations WHERE Dnumber = ?";
             PreparedStatement stmt2 = conn.prepareStatement(query2);
             stmt2.setInt(1, Dnumber);
@@ -49,7 +50,7 @@ public class Dept_locationsDAO {
                 System.out.println("Department has no locations");
             }
 
-            // create new location record
+            // create the new location record
             System.out.println("\nEnter information:");
 
             System.out.println("Location Name: ");
@@ -87,7 +88,8 @@ public class Dept_locationsDAO {
             conn.setAutoCommit(false);
 
             System.out.println("\nAttempting to lock department record...");
-            // perform a lock on department record
+
+            // Lock the department row to ensure consistent deletion
             String query = "SELECT * FROM Department WHERE Dnumber = ? FOR UPDATE";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setInt(1, Dnumber);
@@ -100,7 +102,7 @@ public class Dept_locationsDAO {
                 return;
             }
 
-            // Show all locations of department
+            // Fetch and display all department locations
             String query2 = "SELECT * FROM Dept_locations WHERE Dnumber = ?";
             PreparedStatement stmt2 = conn.prepareStatement(query2);
             stmt2.setInt(1, Dnumber);
@@ -132,6 +134,7 @@ public class Dept_locationsDAO {
                 }
             }
 
+            // Delete the selected location from the table
             String delete_query = "DELETE FROM Dept_locations WHERE Dnumber = ? AND Dlocation = ?";
             PreparedStatement delete_stmt = conn.prepareStatement(delete_query);
             delete_stmt.setInt(1, Dnumber);

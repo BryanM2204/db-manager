@@ -13,6 +13,8 @@ public class DepartmentDAO {
     }
 
     public void get(int Dept_number) {
+
+        // Retrieves department details, including manager info and locations
         String query = "SELECT D.Dname, D.Dnumber, D.Mgr_ssn, D.Mgr_start_date, S.Fname AS Supervisor_Fname, S.Minit as Supervisor_Minit, S.Lname AS" +
                 " Supervisor_Lname, L.Dlocation FROM Department D LEFT JOIN Employee S ON D.Mgr_ssn = S.Ssn LEFT JOIN Dept_locations L ON D.Dnumber = L.Dnumber WHERE D.Dnumber = ?";
         try(PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -46,6 +48,7 @@ public class DepartmentDAO {
     }
 
     public void add(Department department) {
+        // Insert a new department record to the database in the Department table
         String query = "INSERT INTO Department VALUES (?, ?, ?, ?)";
         try(PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, department.getDname());
@@ -65,7 +68,10 @@ public class DepartmentDAO {
             conn.setAutoCommit(false);
 
             System.out.println("\nAttempting to lock department record...");
+
+            // Lock department row for safe deletion
             String query = "SELECT * FROM Department WHERE Dnumber = ? FOR UPDATE";
+
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setInt(1, Dnumber);
             ResultSet rs = stmt.executeQuery();
@@ -80,7 +86,10 @@ public class DepartmentDAO {
 
 
                 boolean hasDependencies = false;
+
+                // Check for locations assigned to the department
                 String query2 = "SELECT * FROM Dept_locations WHERE Dnumber = ?";
+
                 PreparedStatement stmt2 = conn.prepareStatement(query2);
                 stmt2.setInt(1, Dnumber);
                 ResultSet rs2 = stmt2.executeQuery();
@@ -88,6 +97,7 @@ public class DepartmentDAO {
                     hasDependencies = true;
                 }
 
+                // Check for employees assigned to the department
                 String query3 = "SELECT * FROM Employee WHERE Dno = ?";
                 PreparedStatement stmt3 = conn.prepareStatement(query3);
                 stmt3.setInt(1, Dnumber);
@@ -96,6 +106,7 @@ public class DepartmentDAO {
                     hasDependencies = true;
                 }
 
+                // Check for projects assigned to department
                 String query4 = "SELECT * FROM Project WHERE Dnum = ?";
                 PreparedStatement stmt4 = conn.prepareStatement(query4);
                 stmt4.setInt(1, Dnumber);
@@ -114,6 +125,8 @@ public class DepartmentDAO {
                 String answer = System.console().readLine();
 
                 if(answer.equalsIgnoreCase("Yes")) {
+
+                    // Delete the department that was specified by the user
                     String delete_query = "DELETE FROM Department WHERE Dnumber = ?";
                     PreparedStatement delete_stmt = conn.prepareStatement(delete_query);
                     delete_stmt.setInt(1, Dnumber);
